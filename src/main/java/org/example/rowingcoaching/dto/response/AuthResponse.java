@@ -2,11 +2,20 @@ package org.example.rowingcoaching.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.example.rowingcoaching.model.User;
+import lombok.NoArgsConstructor;
+import org.example.rowingcoaching.dto.UserDTO;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuthResponse {
     private String token;
-    private User user;
+    private UserDTO user;
+    private String errorMessage;
+
+    public AuthResponse(String token, UserDTO user) {
+        this.token = token;
+        this.user = user;
+        this.errorMessage = null;
+    }
 }

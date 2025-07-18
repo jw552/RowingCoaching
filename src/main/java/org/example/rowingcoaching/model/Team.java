@@ -14,20 +14,15 @@ import java.util.List;
 @NoArgsConstructor
 public class Team {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
     private String teamCode;
 
+    @Column(nullable = false)
     private String teamName;
 
-    @OneToOne
-    @JoinColumn(name = "coach_id", referencedColumnName = "id", unique = true)
-    private User coach;
-
-    @OneToMany(mappedBy = "team")
-    private List<User> members = new ArrayList<>();
-
-    // Getters and setters
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UserTeam> userTeams = new ArrayList<>();
 }

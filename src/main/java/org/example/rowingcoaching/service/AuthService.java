@@ -8,6 +8,8 @@ import org.example.rowingcoaching.dto.response.AuthResponse;
 import org.example.rowingcoaching.model.User;
 import org.example.rowingcoaching.repository.UserRepository;
 import org.example.rowingcoaching.security.JwtTokenProvider;
+import org.example.rowingcoaching.dto.UserDTO;
+import org.example.rowingcoaching.mapper.UserMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,8 +38,6 @@ public class AuthService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
-
 
         return userRepository.save(user);
     }
@@ -53,7 +53,13 @@ public class AuthService {
         ).orElseThrow(() -> new RuntimeException("User not found."));
 
         String token = jwtProvider.generateToken(user.getUsername());
-        return new AuthResponse(token, user);
 
+        // Convert User entity to UserDTO to avoid serialization issues
+        UserDTO userDTO = UserMapper.toDTO(user);
+
+        System.out.println("[LOGIN] Token: " + token);
+        System.out.println("[LOGIN] UserDTO: " + userDTO);
+
+        return new AuthResponse(token, userDTO);
     }
 }
