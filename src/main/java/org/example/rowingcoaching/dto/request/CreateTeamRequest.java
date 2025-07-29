@@ -10,7 +10,6 @@ public class CreateTeamRequest {
 
         @NotBlank(message = "Team name is required")
         private String name;
-
-        @NotBlank(message = "Team code is required")
-        private String teamCode;
+        
+        private String logo;
 }

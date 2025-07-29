@@ -46,6 +46,30 @@ public class TeamService {
     }
 
     /**
+     * Create a new team with a coach and logo
+     */
+    @Transactional
+    public Team createTeam(String teamName, String logo, Long coachId) {
+        // Get the coach
+        User coach = userRepository.findById(coachId)
+                .orElseThrow(() -> new RuntimeException("Coach not found"));
+
+        // Create team with unique code
+        Team team = new Team();
+        team.setTeamName(teamName);
+        team.setLogo(logo);
+        team.setTeamCode(generateUniqueTeamCode());
+
+        Team savedTeam = teamRepository.save(team);
+
+        // Add coach to team
+        UserTeam userTeam = new UserTeam(coach, savedTeam, UserTeam.Role.COACH);
+        userTeamRepository.save(userTeam);
+
+        return savedTeam;
+    }
+
+    /**
      * Create team without specifying coach upfront
      */
     public Team createTeam(Team team) {

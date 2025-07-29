@@ -23,6 +23,9 @@ public class Team {
     @Column(nullable = false)
     private String teamName;
 
+    @Column
+    private String logo;
+
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UserTeam> userTeams = new ArrayList<>();
 }

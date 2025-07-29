@@ -34,11 +34,18 @@ public class TeamController {
     @Transactional
     public ResponseEntity<TeamDTO> createTeam(@Valid @RequestBody CreateTeamRequest request, Authentication authentication) {
         String username = authentication.getName();
+        System.out.println("[CREATE_TEAM] Attempting to create team. Authenticated username: " + username);
         User coach = userService.getUserByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElse(null);
+        if (coach == null) {
+            System.out.println("[CREATE_TEAM] User not found in DB for username: " + username);
+            return ResponseEntity.status(401).build(); // Unauthorized
+        }
+        System.out.println("[CREATE_TEAM] User found: " + coach.getId() + " (" + coach.getUsername() + ")");
 
         // TeamService.createTeam automatically assigns creator as COACH
-        Team savedTeam = teamService.createTeam(request.getName(), coach.getId());
+        Team savedTeam = teamService.createTeam(request.getName(), request.getLogo(), coach.getId());
+        System.out.println("[CREATE_TEAM] Team created successfully: " + savedTeam.getTeamName() + " (ID: " + savedTeam.getId() + ")");
         return ResponseEntity.ok(TeamMapper.toDTO(savedTeam));
     }
 
