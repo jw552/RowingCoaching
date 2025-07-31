@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,16 +18,8 @@ public class CreateWorkoutRequest {
         @NotNull(message = "Date is required")
         private LocalDate date;
 
-        @Min(value = 1, message = "Duration must be at least 1 second")
-        private int duration;
-
-        @Min(value = 1, message = "Distance must be at least 1 meter")
-        private int distance;
-
-        @Min(value = 1, message = "Stroke rate must be at least 1")
-        private int strokeRate;
-
-        private double pace;
+        @NotNull(message = "At least one segment is required")
+        private List<CreateWorkoutSegmentRequest> segments;
 
         private String rawJsonData;
 }
