@@ -6,7 +6,7 @@
   },
   "deploy": {
     "startCommand": "java -jar target/RowingCoaching-0.0.1-SNAPSHOT.jar",
-    "healthcheckPath": "/actuator/health",
+    "healthcheckPath": "/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE"
   }
