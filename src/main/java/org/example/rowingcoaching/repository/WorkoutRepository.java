@@ -7,4 +7,8 @@ import java.util.List;
 @Repository
 public interface WorkoutRepository extends JpaRepository<Workout, Long> {
     List<Workout> findByAthleteId(Long userId);
+    List<Workout> findByAthleteIdOrderByCreatedAtDesc(Long userId);
+    List<Workout> findByAthleteIdAndStatusInOrderByCreatedAtDesc(Long userId, List<Workout.WorkoutStatus> statuses);
+    List<Workout> findByAthleteIdAndStatusOrderByCompletedAtDesc(Long userId, Workout.WorkoutStatus status);
+    List<Workout> findByCoachIdOrderByCreatedAtDesc(Long coachId);
 }

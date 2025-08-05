@@ -8,6 +8,10 @@ import org.example.rowingcoaching.service.UserService;
 import org.example.rowingcoaching.dto.TeamDTO;
 import org.example.rowingcoaching.dto.request.CreateTeamRequest;
 import org.example.rowingcoaching.mapper.TeamMapper;
+import org.example.rowingcoaching.dto.UserTeamDetailsDTO;
+import org.example.rowingcoaching.mapper.UserTeamMapper;
+import org.example.rowingcoaching.dto.UserDTO;
+import org.example.rowingcoaching.mapper.UserMapper;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -73,36 +77,48 @@ public class TeamController {
      * Get all members of a team
      */
     @GetMapping("/{teamId}/members")
-    public ResponseEntity<List<User>> getTeamMembers(@PathVariable Long teamId) {
+    public ResponseEntity<List<UserDTO>> getTeamMembers(@PathVariable Long teamId) {
         List<User> members = teamService.getTeamMembers(teamId);
-        return ResponseEntity.ok(members);
+        List<UserDTO> memberDTOs = members.stream()
+                .map(UserMapper::toDTO)
+                .toList();
+        return ResponseEntity.ok(memberDTOs);
     }
 
     /**
      * Get coaches of a team
      */
     @GetMapping("/{teamId}/coaches")
-    public ResponseEntity<List<User>> getTeamCoaches(@PathVariable Long teamId) {
+    public ResponseEntity<List<UserDTO>> getTeamCoaches(@PathVariable Long teamId) {
         List<User> coaches = teamService.getTeamCoaches(teamId);
-        return ResponseEntity.ok(coaches);
+        List<UserDTO> coachDTOs = coaches.stream()
+                .map(UserMapper::toDTO)
+                .toList();
+        return ResponseEntity.ok(coachDTOs);
     }
 
     /**
      * Get athletes of a team
      */
     @GetMapping("/{teamId}/athletes")
-    public ResponseEntity<List<User>> getTeamAthletes(@PathVariable Long teamId) {
+    public ResponseEntity<List<UserDTO>> getTeamAthletes(@PathVariable Long teamId) {
         List<User> athletes = teamService.getTeamAthletes(teamId);
-        return ResponseEntity.ok(athletes);
+        List<UserDTO> athleteDTOs = athletes.stream()
+                .map(UserMapper::toDTO)
+                .toList();
+        return ResponseEntity.ok(athleteDTOs);
     }
 
     /**
      * Get all team relationships (includes roles, join dates, etc.)
      */
     @GetMapping("/{teamId}/relationships")
-    public ResponseEntity<List<UserTeam>> getTeamUserRelationships(@PathVariable Long teamId) {
+    public ResponseEntity<List<UserTeamDetailsDTO>> getTeamUserRelationships(@PathVariable Long teamId) {
         List<UserTeam> relationships = teamService.getTeamUserRelationships(teamId);
-        return ResponseEntity.ok(relationships);
+        List<UserTeamDetailsDTO> relationshipDTOs = relationships.stream()
+                .map(UserTeamMapper::toDetailsDTO)
+                .toList();
+        return ResponseEntity.ok(relationshipDTOs);
     }
 
     /**

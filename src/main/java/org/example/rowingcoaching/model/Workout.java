@@ -3,7 +3,7 @@ package org.example.rowingcoaching.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,21 +15,51 @@ public class Workout {
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDate date;
-    private int totalDistance; // in meters - calculated from segments
-    private int totalDuration; // in seconds - calculated from segments
-    private double averagePace; // in seconds per 500 meters - calculated from segments
-    private int averageStrokeRate; // calculated from segments
+    @Enumerated(EnumType.STRING)
+    private WorkoutType type;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
-    private String rawJsonData;
+    private String metrics; // JSON string for workout metrics (distance, time, restPeriod, etc.)
+
+    @Enumerated(EnumType.STRING)
+    private WorkoutStatus status = WorkoutStatus.CREATED;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime completedAt;
+
+    // Results from completed workout
+    private Integer totalDistance; // in meters
+    private Integer totalTime; // in seconds
+    private Double averagePace; // in seconds per 500m
+    private Double averageSplit; // in seconds per 500m
+    private Integer calories;
+    private Integer averageStrokeRate;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "athlete_id")
     private User athlete;
+
+    @ManyToOne
+    @JoinColumn(name = "coach_id")
+    private User coach;
 
     @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("orderIndex ASC")
     private List<WorkoutSegment> segments = new ArrayList<>();
+
+    public enum WorkoutType {
+        SINGLE_DISTANCE,
+        SINGLE_TIME,
+        INTERVAL_DISTANCE,
+        INTERVAL_TIME
+    }
+
+    public enum WorkoutStatus {
+        CREATED,
+        ASSIGNED,
+        IN_PROGRESS,
+        COMPLETED,
+        CANCELLED
+    }
 }

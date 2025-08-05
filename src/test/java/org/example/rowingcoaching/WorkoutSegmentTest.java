@@ -1,17 +1,17 @@
 package org.example.rowingcoaching;
 
 import org.example.rowingcoaching.dto.request.CreateWorkoutRequest;
-import org.example.rowingcoaching.dto.request.CreateWorkoutSegmentRequest;
-import org.example.rowingcoaching.model.WorkoutSegment;
+import org.example.rowingcoaching.model.User;
+import org.example.rowingcoaching.model.Workout;
 import org.example.rowingcoaching.service.WorkoutService;
+import org.example.rowingcoaching.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,72 +22,94 @@ public class WorkoutSegmentTest {
     @Autowired
     private WorkoutService workoutService;
 
+    @Autowired
+    private UserService userService;
+
     @Test
-    public void testCreateWorkoutWithSegments() {
-        // Create a workout with multiple segments
+    public void testCreateSingleDistanceWorkout() {
+        // Create a test user first
+        User testUser = createTestUser();
+        
+        // Create a single distance workout
         CreateWorkoutRequest request = new CreateWorkoutRequest();
-        request.setUserId(1L);
-        request.setDate(LocalDate.now());
+        request.setType(Workout.WorkoutType.SINGLE_DISTANCE);
+        
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("distance", 2000);
+        request.setMetrics(metrics);
 
-        // Create segments: 1000m workout, 60s rest, 500m workout
-        CreateWorkoutSegmentRequest segment1 = new CreateWorkoutSegmentRequest();
-        segment1.setType(WorkoutSegment.SegmentType.WORKOUT);
-        segment1.setOrderIndex(0);
-        segment1.setDistance(1000);
-        segment1.setPace(120.0); // 2:00/500m
-        segment1.setStrokeRate(24);
-
-        CreateWorkoutSegmentRequest segment2 = new CreateWorkoutSegmentRequest();
-        segment2.setType(WorkoutSegment.SegmentType.REST);
-        segment2.setOrderIndex(1);
-        segment2.setDuration(60);
-
-        CreateWorkoutSegmentRequest segment3 = new CreateWorkoutSegmentRequest();
-        segment3.setType(WorkoutSegment.SegmentType.WORKOUT);
-        segment3.setOrderIndex(2);
-        segment3.setDistance(500);
-        segment3.setPace(125.0); // 2:05/500m
-        segment3.setStrokeRate(26);
-
-        request.setSegments(Arrays.asList(segment1, segment2, segment3));
-
-        // This test will fail if user doesn't exist, but it validates the structure
-        try {
-            var workout = workoutService.createWorkout(request);
-            assertNotNull(workout);
-            assertEquals(1500, workout.getTotalDistance()); // 1000 + 500
-            assertEquals(3, workout.getSegments().size());
-            assertEquals(122.5, workout.getAveragePace(), 0.1); // (120 + 125) / 2
-            assertEquals(25, workout.getAverageStrokeRate()); // (24 + 26) / 2
-        } catch (RuntimeException e) {
-            // Expected if user doesn't exist in test database
-            assertTrue(e.getMessage().contains("User not found"));
-        }
+        var workout = workoutService.createWorkout(request, testUser);
+        assertNotNull(workout);
+        assertEquals(Workout.WorkoutType.SINGLE_DISTANCE, workout.getType());
+        assertEquals(Workout.WorkoutStatus.CREATED, workout.getStatus());
+        assertNotNull(workout.getCreatedAt());
     }
 
     @Test
-    public void testDurationBasedWorkout() {
+    public void testCreateIntervalTimeWorkout() {
+        // Create a test user first
+        User testUser = createTestUser();
+        
+        // Create an interval time workout
         CreateWorkoutRequest request = new CreateWorkoutRequest();
-        request.setUserId(1L);
-        request.setDate(LocalDate.now());
+        request.setType(Workout.WorkoutType.INTERVAL_TIME);
+        
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("time", 300); // 5 minutes
+        metrics.put("restPeriod", 60); // 1 minute rest
+        request.setMetrics(metrics);
 
-        // Create a segment with duration instead of distance
-        CreateWorkoutSegmentRequest segment = new CreateWorkoutSegmentRequest();
-        segment.setType(WorkoutSegment.SegmentType.WORKOUT);
-        segment.setOrderIndex(0);
-        segment.setDuration(240); // 4 minutes
-        segment.setPace(120.0); // 2:00/500m
-        segment.setStrokeRate(24);
+        var workout = workoutService.createWorkout(request, testUser);
+        assertNotNull(workout);
+        assertEquals(Workout.WorkoutType.INTERVAL_TIME, workout.getType());
+        assertEquals(Workout.WorkoutStatus.CREATED, workout.getStatus());
+    }
 
-        request.setSegments(Arrays.asList(segment));
+    @Test
+    public void testStartAndCompleteWorkout() {
+        // Create a test user first
+        User testUser = createTestUser();
+        
+        // Create a workout
+        CreateWorkoutRequest createRequest = new CreateWorkoutRequest();
+        createRequest.setType(Workout.WorkoutType.SINGLE_DISTANCE);
+        
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("distance", 1000);
+        createRequest.setMetrics(metrics);
 
-        try {
-            var workout = workoutService.createWorkout(request);
-            assertNotNull(workout);
-            assertEquals(1000, workout.getTotalDistance()); // (240 / 120) * 500
-            assertEquals(240, workout.getTotalDuration());
-        } catch (RuntimeException e) {
-            assertTrue(e.getMessage().contains("User not found"));
-        }
+        var workout = workoutService.createWorkout(createRequest, testUser);
+        
+        // Start the workout
+        var startedWorkout = workoutService.startWorkout(workout.getId(), testUser);
+        assertEquals(Workout.WorkoutStatus.IN_PROGRESS, startedWorkout.getStatus());
+        assertNotNull(startedWorkout.getStartedAt());
+        
+        // Complete the workout
+        var completeRequest = new org.example.rowingcoaching.dto.request.CompleteWorkoutRequest();
+        var result = new org.example.rowingcoaching.dto.request.CompleteWorkoutRequest.WorkoutResult();
+        result.setTotalDistance(1000);
+        result.setTotalTime(240); // 4 minutes
+        result.setAveragePace(120.0); // 2:00/500m
+        result.setAverageSplit(120.0);
+        result.setCalories(120);
+        result.setAverageStrokeRate(24);
+        completeRequest.setResult(result);
+        
+        var completedWorkout = workoutService.completeWorkout(workout.getId(), completeRequest, testUser);
+        assertEquals(Workout.WorkoutStatus.COMPLETED, completedWorkout.getStatus());
+        assertNotNull(completedWorkout.getCompletedAt());
+        assertEquals(1000, completedWorkout.getTotalDistance());
+        assertEquals(240, completedWorkout.getTotalTime());
+    }
+
+    private User createTestUser() {
+        User user = new User();
+        user.setFirstName("Test");
+        user.setLastName("User");
+        user.setUsername("testuser");
+        user.setEmail("test@example.com");
+        user.setPassword("password");
+        return userService.save(user);
     }
 } 

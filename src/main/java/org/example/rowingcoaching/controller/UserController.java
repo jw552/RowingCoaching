@@ -9,6 +9,8 @@ import org.example.rowingcoaching.dto.request.CreateUserRequest;
 import org.example.rowingcoaching.mapper.UserMapper;
 import org.example.rowingcoaching.dto.TeamDTO;
 import org.example.rowingcoaching.mapper.TeamMapper;
+import org.example.rowingcoaching.dto.UserTeamDetailsDTO;
+import org.example.rowingcoaching.mapper.UserTeamMapper;
 import org.springframework.security.core.Authentication;
 
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +29,17 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return users.stream()
+                .map(UserMapper::toDTO)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
+                .map(UserMapper::toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -147,12 +153,15 @@ public class UserController {
      * Get all team relationships for current user (includes role, join date, etc.)
      */
     @GetMapping("/team-relationships")
-    public ResponseEntity<List<UserTeam>> getCurrentUserTeamRelationships(Authentication authentication) {
+    public ResponseEntity<List<UserTeamDetailsDTO>> getCurrentUserTeamRelationships(Authentication authentication) {
         String username = authentication.getName();
         User user = userService.getUserByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<UserTeam> relationships = userService.getUserTeamRelationships(user.getId());
-        return ResponseEntity.ok(relationships);
+        List<UserTeamDetailsDTO> relationshipDTOs = relationships.stream()
+                .map(UserTeamMapper::toDetailsDTO)
+                .toList();
+        return ResponseEntity.ok(relationshipDTOs);
     }
 }

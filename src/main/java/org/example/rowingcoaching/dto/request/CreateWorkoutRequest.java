@@ -1,25 +1,22 @@
 package org.example.rowingcoaching.dto.request;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.rowingcoaching.model.Workout;
 
-import java.time.LocalDate;
-import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
 public class CreateWorkoutRequest {
 
-        @NotNull(message = "User ID is required")
-        private Long userId;
+    @NotNull(message = "Workout type is required")
+    private Workout.WorkoutType type;
 
-        @NotNull(message = "Date is required")
-        private LocalDate date;
+    @NotNull(message = "Workout metrics are required")
+    private Map<String, Object> metrics;
 
-        @NotNull(message = "At least one segment is required")
-        private List<CreateWorkoutSegmentRequest> segments;
-
-        private String rawJsonData;
+    // Optional: for coach assigning to athlete
+    private Long athleteId;
 }

@@ -51,4 +51,8 @@ public interface UserTeamRepository extends JpaRepository<UserTeam, Long> {
     // Find athletes for a team
     @Query("SELECT ut FROM UserTeam ut WHERE ut.team.id = :teamId AND ut.role = 'ATHLETE' AND ut.active = true")
     List<UserTeam> findActiveAthletesByTeamId(@Param("teamId") Long teamId);
+
+    // Check if user has specific role in any team
+    @Query("SELECT COUNT(ut) > 0 FROM UserTeam ut WHERE ut.user.id = :userId AND ut.role = :role AND ut.active = true")
+    boolean existsActiveByUserIdAndRole(@Param("userId") Long userId, @Param("role") UserTeam.Role role);
 }

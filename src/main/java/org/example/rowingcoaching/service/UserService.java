@@ -145,4 +145,11 @@ public class UserService {
         }
         return false;
     }
+
+    /**
+     * Check if user is a coach of any team
+     */
+    public boolean isUserCoachOfAnyTeam(Long userId) {
+        return userTeamRepository.existsActiveByUserIdAndRole(userId, UserTeam.Role.COACH);
+    }
 }
