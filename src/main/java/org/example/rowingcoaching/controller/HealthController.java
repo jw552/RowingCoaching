@@ -28,10 +28,14 @@ public class HealthController {
         sb.append("Active Profiles: ").append(String.join(", ", env.getActiveProfiles())).append("\n");
         sb.append("Database URL: ").append(env.getProperty("spring.datasource.url")).append("\n");
         sb.append("Database User: ").append(env.getProperty("spring.datasource.username")).append("\n");
-        sb.append("SUPABASE_URL: ").append(env.getProperty("SUPABASE_URL")).append("\n");
-        sb.append("SUPABASE_DB_HOST: ").append(env.getProperty("SUPABASE_DB_HOST")).append("\n");
-        sb.append("SPRING_PROFILES_ACTIVE: ").append(env.getProperty("SPRING_PROFILES_ACTIVE")).append("\n");
+        sb.append("DATABASE_URL: ").append(env.getProperty("DATABASE_URL")).append("\n");
+        sb.append("DATABASE_USERNAME: ").append(env.getProperty("DATABASE_USERNAME")).append("\n");
         sb.append("=== END DEBUG ===");
         return sb.toString();
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        return "App is running without database!";
     }
 } 
