@@ -22,9 +22,8 @@ public class RowingCoachingApplication {
         System.out.println("Active Profiles: " + String.join(", ", env.getActiveProfiles()));
         System.out.println("Database URL: " + env.getProperty("spring.datasource.url"));
         System.out.println("Database User: " + env.getProperty("spring.datasource.username"));
-        System.out.println("SUPABASE_URL: " + env.getProperty("SUPABASE_URL"));
-        System.out.println("SUPABASE_DB_HOST: " + env.getProperty("SUPABASE_DB_HOST"));
-        System.out.println("SPRING_PROFILES_ACTIVE: " + env.getProperty("SPRING_PROFILES_ACTIVE"));
+        System.out.println("DATABASE_URL: " + env.getProperty("DATABASE_URL"));
+        System.out.println("DATABASE_USERNAME: " + env.getProperty("DATABASE_USERNAME"));
         System.out.println("=== END DEBUGGING ===");
     }
 }

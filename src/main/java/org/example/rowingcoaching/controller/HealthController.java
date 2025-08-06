@@ -11,8 +11,6 @@ public class HealthController {
     @Autowired
     private Environment env;
 
-
-
     @GetMapping("/health")
     public String healthCheck() {
         return "OK";
