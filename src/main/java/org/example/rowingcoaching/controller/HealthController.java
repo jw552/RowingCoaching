@@ -11,10 +11,7 @@ public class HealthController {
     @Autowired
     private Environment env;
 
-    @GetMapping("/")
-    public String health() {
-        return "RowingCoaching API is running!";
-    }
+
 
     @GetMapping("/health")
     public String healthCheck() {
